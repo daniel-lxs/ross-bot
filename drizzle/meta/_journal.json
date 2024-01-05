@@ -1,0 +1,34 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1704471147589,
+      "tag": "0000_omniscient_speedball",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1704472580391,
+      "tag": "0001_watery_thunderbolt_ross",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1704478719057,
+      "tag": "0002_polite_goblin_queen",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1704492617892,
+      "tag": "0003_striped_korg",
+      "breakpoints": true
+    }
+  ]
+}

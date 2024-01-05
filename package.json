@@ -1,0 +1,25 @@
+{
+  "name": "ross",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts",
+    "run-migrations": "bun run src/data/migrate.ts",
+    "generate-migrations": "bunx drizzle-kit generate:sqlite --schema ./src/data/models/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/js-yaml": "^4.0.9",
+    "drizzle-kit": "^0.20.10"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "drizzle-orm": "^0.29.3",
+    "js-yaml": "^4.1.0",
+    "rss-parser": "^3.13.0"
+  }
+}

@@ -1,0 +1,7 @@
+feeds:
+  - name: TechRadar
+    url: https://www.techradar.com/feeds/articletype/news
+  - name: TorrentFreak
+    url: https://torrentfreak.com/feed
+  - name: HackerNews
+    url: https://news.ycombinator.com/rss
