@@ -1,7 +1,7 @@
 import { dump, load } from 'js-yaml';
 import RSSParser from 'rss-parser';
 import path from 'path';
-import type { Post } from '../../data/models';
+import type { NewPost, Post } from '../../data/models';
 import {
   createPost,
   findPostByExternalId,
@@ -15,6 +15,7 @@ import type {
   TextChannel,
   VoiceChannel,
 } from 'discord.js';
+import { getConfig } from '../../data/repositories/configRepository';
 
 export async function getRSSFeeds(): Promise<FeedList> {
   try {
@@ -34,46 +35,77 @@ async function parseRSS(url: string) {
   return feed;
 }
 
-export async function getValidPost(): Promise<Post | null> {
+export async function getValidPost(): Promise<NewPost | null> {
   const feedList = await getRSSFeeds();
-  // Randomize the feeds
-  const randomizedFeeds = [...feedList.feeds].sort(() => 0.5 - Math.random());
+  const randomizedFeeds = shuffle(feedList.feeds);
+
   for (const feed of randomizedFeeds) {
     const parsedFeed = await parseRSS(feed.url);
-
     if (parsedFeed.items.length > 0) {
       for (const item of parsedFeed.items) {
-        if (
-          item.title &&
-          item.content &&
-          item.link &&
-          item.guid &&
-          item.categories &&
-          !findPostByExternalId(item.guid)
-        ) {
-          console.log(`Found valid article: ${JSON.stringify(item)}`);
-          return {
-            title: item.title,
-            content: item.content,
-            categories: item.categories,
-            url: item.link,
-            externalId: item.guid,
-            source: feed.name,
-          };
+        if (!hasValidDate(item)) {
+          continue;
+        }
+
+        const maxAgeHours = Number(getConfig('RSS_MAX_AGE')) || 24;
+        const date = getItemDate(item);
+
+        if (isExpired(date, maxAgeHours)) {
+          continue;
+        }
+
+        if (isValidPost(item) && !isDuplicatePost(item)) {
+          return createPostFromItem(item, feed.name);
         }
       }
     }
   }
+
   console.log('No valid article found');
   return null;
 }
 
-export function formatCategories(categories: string[]) {
+function shuffle<T>(array: T[]): T[] {
+  return [...array].sort(() => 0.5 - Math.random());
+}
+
+function hasValidDate(item: any): boolean {
+  return !!item.pubDate || !!item.isoDate;
+}
+
+function getItemDate(item: any): Date {
+  return new Date(item.pubDate || item.isoDate);
+}
+
+function isExpired(date: Date, maxAgeHours: number): boolean {
+  return date.getTime() < Date.now() - maxAgeHours * 60 * 60 * 1000;
+}
+
+function isValidPost(item: any): boolean {
+  return !!item.title && !!item.content && !!item.link;
+}
+
+function isDuplicatePost(item: any): boolean {
+  return !!findPostByExternalId(item.guid || item.link);
+}
+
+function createPostFromItem(item: any, source: string): NewPost {
+  return {
+    title: item.title,
+    content: item.content,
+    categories: item.categories || ['No Category'],
+    url: item.link,
+    externalId: item.guid || item.link,
+    source,
+  };
+}
+
+export function formatCategories(categories: string[], limit = 2) {
   if (categories.length === 0) {
     return '';
   }
-  if (categories.length > 2) {
-    categories = categories.slice(0, 2);
+  if (categories.length > limit) {
+    categories = categories.slice(0, limit);
   }
   categories = categories.map((category) => {
     return `🔷${category}`;
@@ -93,10 +125,14 @@ export async function sendRSSPost(
   const post = await getValidPost();
   if (post) {
     console.log('Sending message');
+
+    const postCategories =
+      post.categories.length > 0 ? post.categories : [post.source];
+
+    const formattedCategories = formatCategories(postCategories, 3);
+
     const result = await channel.send(
-      `📰  | ${post.title} \n\`${formatCategories(post.categories)}\`\n${
-        post.url
-      }`
+      `📰  | ${post.title} \n\`${formattedCategories}\`\n${post.url}`
     );
     if (!result.hasThread) {
       await result.startThread({
@@ -107,7 +143,8 @@ export async function sendRSSPost(
 
     createPost({
       ...post,
-      postedOn: new Date(result.createdTimestamp),
+      postedOn: result.createdTimestamp,
+      categories: postCategories,
     });
     return;
   }
