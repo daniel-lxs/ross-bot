@@ -7,5 +7,8 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction: CommandInteraction) {
   const feeds = await getRSSFeeds();
-  interaction.reply(feeds.feeds.map((feed) => feed.name).join('\n'));
+  interaction.reply({
+    content: feeds.feeds.map((feed) => feed.name).join('\n'),
+    ephemeral: true,
+  });
 }
