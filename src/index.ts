@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { commands, deployCommands } from './commands/commands';
 import { sendRSSPost } from './services/RSS/RSS';
-import { findConfigByName } from './data/repositories/configRepository';
+import { getConfig } from './data/repositories/configRepository';
 import { initializeConfig } from './services/config/initializeConfig';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -13,7 +13,7 @@ client.on('ready', async () => {
   console.log(`Logged in as ${client.user?.tag}!`);
   //RSS setup
   console.log('Setting up RSS');
-  const postInterval = findConfigByName('RSS_POST_INTERVAL');
+  const postInterval = getConfig('RSS_POST_INTERVAL');
   setPostInterval(Number(postInterval));
   console.log('RSS setup complete');
 });
@@ -51,7 +51,7 @@ export async function setPostInterval(postInterval: number) {
     }
 
     postIntervalId = setInterval(async () => {
-      const RSSEnabled = findConfigByName('RSS_ENABLED');
+      const RSSEnabled = getConfig('RSS_ENABLED');
       if (RSSEnabled === 'false') {
         return;
       }

@@ -25,7 +25,7 @@ export function updateConfig(config: Config) {
   throw new Error('Failed to update config');
 }
 
-export function findConfigByName(name: string): string | null {
+export function getConfig(name: string): string | null {
   const db = getDb();
   const result = db
     .select()

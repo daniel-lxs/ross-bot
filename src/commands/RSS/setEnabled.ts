@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, CommandInteraction } from 'discord.js';
 import {
-  findConfigByName,
+  getConfig,
   updateConfig,
 } from '../../data/repositories/configRepository';
 import { checkOwnerRole } from '../../utils/checkOwnerRole';
@@ -16,7 +16,7 @@ export async function execute(interaction: CommandInteraction) {
       content: 'You dont have permission to use this command',
     });
   }
-  const rssEnabled = findConfigByName('RSS_ENABLED');
+  const rssEnabled = getConfig('RSS_ENABLED');
   const newRssEnabled = rssEnabled === 'true' ? 'false' : 'true';
 
   updateConfig({
