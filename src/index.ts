@@ -34,7 +34,7 @@ client.login(process.env.TOKEN);
 
 let postIntervalId: NodeJS.Timeout | null = null;
 
-async function setPostInterval(postInterval: number) {
+export async function setPostInterval(postInterval: number) {
   const getActiveChannel = async () => {
     const guild = await client.guilds.resolve(process.env.GUILD_ID);
     console.log(`Found guild: ${guild?.name}`);
