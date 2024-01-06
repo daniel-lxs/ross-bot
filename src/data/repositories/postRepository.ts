@@ -1,6 +1,6 @@
 import { sql, eq } from 'drizzle-orm';
 import { getDb } from '../connection';
-import { postSchema, type Post } from '../models';
+import { postSchema, type Post, type NewPost } from '../models';
 import { isValidEntity } from '../../utils/isValidEntity';
 
 export function createPost({
@@ -10,10 +10,13 @@ export function createPost({
   source,
   url,
   postedOn,
-}: Post) {
+  categories,
+}: NewPost) {
+  const serializedCategories = categories.join(',');
+
   try {
     const db = getDb();
-    const query = sql`INSERT INTO posts (externalId, title, content, source, url, postedOn) VALUES (${externalId}, ${title}, ${content}, ${source}, ${url}, ${postedOn})
+    const query = sql`INSERT INTO posts (externalId, title, content, source, url, postedOn, categories) VALUES (${externalId}, ${title}, ${content}, ${source}, ${url}, ${postedOn}, ${serializedCategories})
     RETURNING *`;
 
     const result = db.get<Post>(query);
@@ -25,6 +28,7 @@ export function createPost({
     }
     throw new Error('Failed to create post');
   } catch (error) {
+    console.error(error);
     throw new Error('Failed to create post');
   }
 }
@@ -39,9 +43,16 @@ export function findPostByExternalId(externalId: string): Post | null {
 
   if (
     result &&
-    isValidEntity(result, ['title', 'content', 'source', 'url', 'postedOn'])
+    isValidEntity(result, [
+      'title',
+      'content',
+      'source',
+      'url',
+      'postedOn',
+      'categories',
+    ])
   ) {
-    return { ...result } as Post;
+    return { ...result, categories: result.categories?.split(',') } as Post;
   }
   return null;
 }
