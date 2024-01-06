@@ -43,7 +43,6 @@ export async function setPostInterval(rssPostInterval: number) {
     }
     const channel = guild?.channels.resolve(process.env.CHANNEL_ID);
     if (!channel) {
-      throw new Error('Channel not found');
     }
     return channel;
   };
