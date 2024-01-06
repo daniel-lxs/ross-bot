@@ -1,6 +1,6 @@
-import { SlashCommandBuilder, CommandInteraction } from 'discord.js';
-import { updateConfig } from '../../data/repositories/configRepository';
+import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { setPostInterval } from '../..';
+import { updateConfig } from '../../data/repositories/configRepository';
 import { checkOwnerRole } from '../../utils/checkOwnerRole';
 
 export const data = new SlashCommandBuilder()
@@ -22,6 +22,12 @@ export async function execute(interaction: CommandInteraction) {
       });
     }
     const interval = Number(interaction.options.get('interval')?.value);
+    if (!interval || interval <= 0) {
+      return await interaction.reply({
+        ephemeral: true,
+        content: 'Interval entered is invalid',
+      });
+    }
     updateConfig({
       name: 'RSS_POST_INTERVAL',
       value: String(interval),
@@ -29,7 +35,7 @@ export async function execute(interaction: CommandInteraction) {
     setPostInterval(interval);
     await interaction.reply({
       ephemeral: true,
-      content: `RSS post interval set to ${interval} minutes`,
+      content: `RSS post interval set to ${interval} minute(s)`,
     });
   } catch (e) {
     console.error(e);
