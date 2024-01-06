@@ -5,6 +5,7 @@ import * as setEnabled from './RSS/setEnabled';
 import * as listFeeds from './RSS/listFeeds';
 import * as addFeed from './RSS/addFeed';
 import * as deleteFeed from './RSS/deleteFeed';
+import * as setMaxAge from './RSS/setMaxAge';
 
 export const commands = {
   ping,
@@ -13,6 +14,7 @@ export const commands = {
   [deleteFeed.data.name]: deleteFeed,
   [setInterval.data.name]: setInterval,
   [setEnabled.data.name]: setEnabled,
+  [setMaxAge.data.name]: setMaxAge,
 };
 
 export async function deployCommands() {

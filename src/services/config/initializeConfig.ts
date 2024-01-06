@@ -1,20 +1,21 @@
 import {
   createConfig,
-  findConfigByName,
+  getConfig,
 } from '../../data/repositories/configRepository';
 
-export function initializeConfig() {
-  if (!findConfigByName('RSS_ENABLED')) {
-    createConfig({
-      name: 'RSS_ENABLED',
-      value: 'true',
-    });
-  }
+export const config = {
+  RSS_ENABLED: 'true',
+  RSS_POST_INTERVAL: '30',
+  RSS_MAX_AGE: '24',
+};
 
-  if (!findConfigByName('RSS_POST_INTERVAL')) {
-    createConfig({
-      name: 'RSS_POST_INTERVAL',
-      value: '30',
-    });
+export function initializeConfig() {
+  for (const [key, value] of Object.entries(config)) {
+    if (!getConfig(key)) {
+      createConfig({
+        name: key,
+        value,
+      });
+    }
   }
 }
