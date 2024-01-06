@@ -11,10 +11,11 @@ await initializeConfig();
 client.on('ready', async () => {
   await deployCommands();
   console.log(`Logged in as ${client.user?.tag}!`);
-  //RSS setup
+
+  // RSS setup
   console.log('Setting up RSS');
-  const postInterval = getConfig('RSS_POST_INTERVAL');
-  setPostInterval(Number(postInterval));
+  const rssPostInterval = getConfig('RSS_POST_INTERVAL');
+  setPostInterval(Number(rssPostInterval));
   console.log('RSS setup complete');
 });
 
@@ -34,12 +35,16 @@ client.login(process.env.TOKEN);
 
 let postIntervalId: NodeJS.Timeout | null = null;
 
-export async function setPostInterval(postInterval: number) {
+export async function setPostInterval(rssPostInterval: number) {
   const getActiveChannel = async () => {
     const guild = await client.guilds.resolve(process.env.GUILD_ID);
-    console.log(`Found guild: ${guild?.name}`);
+    if (!guild) {
+      throw new Error('Guild not found');
+    }
     const channel = guild?.channels.resolve(process.env.CHANNEL_ID);
-    console.log(`Found channel: ${channel?.name}`);
+    if (!channel) {
+      throw new Error('Channel not found');
+    }
     return channel;
   };
 
@@ -51,11 +56,21 @@ export async function setPostInterval(postInterval: number) {
     }
 
     postIntervalId = setInterval(async () => {
-      const RSSEnabled = getConfig('RSS_ENABLED');
-      if (RSSEnabled === 'false') {
+      const isRSSEnabled = getConfig('RSS_ENABLED');
+      if (isRSSEnabled === 'false') {
         return;
       }
       await sendRSSPost(channel);
-    }, 1000 * 60 * postInterval); // Uses the parameter to set interval
+    }, 1000 * 60 * rssPostInterval);
   }
 }
+
+Bun.serve({
+  port: process.env.PORT ? Number(process.env.PORT) : 3000,
+  fetch: (req) => {
+    if (req.method === 'GET' && req.url === '/health') {
+      return new Response('OK', { status: 200 });
+    }
+    return new Response('Not found', { status: 404 });
+  },
+});
