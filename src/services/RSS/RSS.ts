@@ -36,7 +36,9 @@ async function parseRSS(url: string) {
 
 export async function getValidPost(): Promise<Post | null> {
   const feedList = await getRSSFeeds();
-  for (const feed of feedList.feeds) {
+  // Randomize the feeds
+  const randomizedFeeds = [...feedList.feeds].sort(() => 0.5 - Math.random());
+  for (const feed of randomizedFeeds) {
     const parsedFeed = await parseRSS(feed.url);
 
     if (parsedFeed.items.length > 0) {
@@ -111,7 +113,19 @@ export async function sendRSSPost(
   }
 }
 
+async function isRSSFeed(url: string) {
+  try {
+    const feed = await parseRSS(url);
+    return feed.items.length > 0;
+  } catch (e) {
+    return false;
+  }
+}
+
 export async function addFeed(name: string, url: string) {
+  if (!(await isRSSFeed(url))) {
+    throw new Error('Invalid RSS feed');
+  }
   const feedList = await getRSSFeeds();
   feedList.feeds.push({ name, url });
   await Bun.write(
